@@ -7,8 +7,8 @@ Create Date: 2026-08-21
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0007_application_code"
-down_revision = "0006_experience_fresher_responsibilities"
+revision = "0007_app_code"
+down_revision = "0006_exp_fresh"
 branch_labels = None
 depends_on = None
 

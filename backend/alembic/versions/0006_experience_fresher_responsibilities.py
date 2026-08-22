@@ -7,7 +7,7 @@ Create Date: 2026-08-21
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0006_experience_fresher_responsibilities"
+revision = "0006_exp_fresh"
 down_revision = "0005_education_passing_year_cgpa"
 branch_labels = None
 depends_on = None

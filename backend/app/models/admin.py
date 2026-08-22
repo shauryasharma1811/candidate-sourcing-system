@@ -6,7 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 from app.db.session import Base
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from app.models.user import User
 
 class Admin(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "admins"
@@ -16,4 +19,4 @@ class Admin(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     last_name: Mapped[str] = mapped_column(String(50), nullable=False)
     department: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    user = relationship("User", back_populates="admin")
+    user: Mapped["User"] = relationship("User", back_populates="admin")

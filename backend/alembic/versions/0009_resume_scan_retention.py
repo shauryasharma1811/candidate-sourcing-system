@@ -16,8 +16,8 @@ Create Date: 2026-08-22
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0009_resume_scan_retention"
-down_revision = "0008_application_cover_note"
+revision = "0009_resume_ret"
+down_revision = "0008_cover_note"
 branch_labels = None
 depends_on = None
 

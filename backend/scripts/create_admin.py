@@ -52,10 +52,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.core.security import hash_password  # noqa: E402
 from app.common.enums import UserRole  # noqa: E402
+import app.models  # noqa: F401
 from app.db.session import SessionLocal  # noqa: E402
-from app.models.user import User  # noqa: E402
-from app.models.admin import Admin  # noqa: E402
-
+from app.models import User, Admin  # noqa: E402
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
 
