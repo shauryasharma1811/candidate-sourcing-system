@@ -18,11 +18,15 @@ NOTICE_PERIOD_VALUES = ("Immediate", "15 Days", "30 Days", "60 Days", "90 Days")
 
 
 def upgrade() -> None:
-    gender_enum = postgresql.ENUM("Male", "Female", "Other", "Prefer not to say", name="gender")
-    gender_enum.create(op.get_bind())
+    # create_type=False (see 0001 for rationale): the enum.create() calls below are the
+    # only DDL that should issue CREATE TYPE; op.add_column() must not re-issue it.
+    gender_enum = postgresql.ENUM(
+        "Male", "Female", "Other", "Prefer not to say", name="gender", create_type=False
+    )
+    gender_enum.create(op.get_bind(), checkfirst=True)
 
-    notice_period_enum = postgresql.ENUM(*NOTICE_PERIOD_VALUES, name="notice_period")
-    notice_period_enum.create(op.get_bind())
+    notice_period_enum = postgresql.ENUM(*NOTICE_PERIOD_VALUES, name="notice_period", create_type=False)
+    notice_period_enum.create(op.get_bind(), checkfirst=True)
 
     op.add_column("candidates", sa.Column("gender", gender_enum, nullable=True))
     op.add_column("candidates", sa.Column("dob", sa.Date(), nullable=True))

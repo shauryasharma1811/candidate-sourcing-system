@@ -1,3 +1,122 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 20% 98.5%;
+    --surface: 0 0% 100%;
+    --surface-muted: 30 20% 95.5%;
+    --foreground: 20 14% 10%;
+    --muted-foreground: 25 8% 42%;
+    --border: 30 12% 89%;
+    --border-strong: 30 10% 79%;
+    --primary: 243 75% 59%;
+    --primary-hover: 244 68% 52%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 243 100% 97%;
+    --ring: 243 75% 59%;
+  }
+
+  .dark {
+    --background: 240 12% 7%;
+    --surface: 240 10% 10.5%;
+    --surface-muted: 240 9% 14%;
+    --foreground: 40 20% 95%;
+    --muted-foreground: 240 6% 64%;
+    --border: 240 8% 20%;
+    --border-strong: 240 8% 29%;
+    --primary: 243 88% 73%;
+    --primary-hover: 243 88% 79%;
+    --primary-foreground: 240 35% 9%;
+    --primary-soft: 243 35% 18%;
+    --ring: 243 88% 73%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
+  /* Visible, on-brand keyboard focus everywhere — never remove the outline
+     without replacing it. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Thin, unobtrusive scrollbar that still respects the theme. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-strong)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border-strong));
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .bg-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--surface-muted)) 25%,
+      hsl(var(--border) / 0.6) 37%,
+      hsl(var(--surface-muted)) 63%
+    );
+    background-size: 400% 100%;
+  }
+
+  .shadow-token {
+    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  }
+  .dark .shadow-token {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.2), 0 1px 3px 0 rgb(0 0 0 / 0.24);
+  }
+  .shadow-token-md {
+    box-shadow: 0 2px 8px -2px rgb(15 23 42 / 0.08), 0 4px 16px -4px rgb(15 23 42 / 0.06);
+  }
+  .dark .shadow-token-md {
+    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.3), 0 4px 16px -4px rgb(0 0 0 / 0.24);
+  }
+  .shadow-token-lg {
+    box-shadow: 0 8px 24px -6px rgb(15 23 42 / 0.12), 0 4px 10px -4px rgb(15 23 42 / 0.08);
+  }
+  .dark .shadow-token-lg {
+    box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.4), 0 4px 10px -4px rgb(0 0 0 / 0.3);
+  }
+}
+
+/* Respect the person's OS-level motion preference: near-instant transitions,
+   no decorative animation. Functional focus/loading states still work. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

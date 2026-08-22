@@ -28,8 +28,8 @@ export default function NewRequisitionPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">New Requisition</h1>
-        <p className="mt-1 text-sm text-gray-600">Save as a draft, or publish it to the careers site immediately.</p>
+        <h1 className="text-2xl font-semibold text-foreground">New Requisition</h1>
+        <p className="mt-1 text-sm text-muted">Save as a draft, or publish it to the careers site immediately.</p>
       </div>
 
       <JobForm

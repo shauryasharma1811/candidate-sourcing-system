@@ -18,15 +18,30 @@ depends_on = None
 def upgrade() -> None:
     op.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto"')
 
-    user_role = postgresql.ENUM("Admin", "Candidate", name="user_role")
-    job_status = postgresql.ENUM("Draft", "Published", "Closed", name="job_status")
-    employment_type = postgresql.ENUM("Full-Time", "Part-Time", "Contract", "Internship", name="employment_type")
-    application_status = postgresql.ENUM("New", "Reviewed", "Shortlisted", "Rejected", name="application_status")
-    notification_event = postgresql.ENUM(
-        "application_submitted", "submission_confirmation", "status_change", name="notification_event"
+    # NOTE (C-1 fix): each enum is created manually below via enum.create(checkfirst=True).
+    # If the same Enum objects were then handed to op.create_table(...) with their default
+    # create_type=True, SQLAlchemy's DDL-compiler emits its OWN "CREATE TYPE" for that column
+    # (it does not know the type was already created), which does not use checkfirst and
+    # collides with the type created here -> "DuplicateObject: type ... already exists".
+    # create_type=False tells SQLAlchemy "this type already exists in the DB, don't emit DDL
+    # for it when creating tables that use it" - the table-level CREATE TYPE event is skipped
+    # entirely and only the explicit enum.create() calls below issue CREATE TYPE.
+    user_role = postgresql.ENUM("Admin", "Candidate", name="user_role", create_type=False)
+    job_status = postgresql.ENUM("Draft", "Published", "Closed", name="job_status", create_type=False)
+    employment_type = postgresql.ENUM(
+        "Full-Time", "Part-Time", "Contract", "Internship", name="employment_type", create_type=False
     )
-    notification_channel = postgresql.ENUM("email", "in_app", name="notification_channel")
-    notification_status = postgresql.ENUM("pending", "sent", "failed", "read", name="notification_status")
+    application_status = postgresql.ENUM(
+        "New", "Reviewed", "Shortlisted", "Rejected", name="application_status", create_type=False
+    )
+    notification_event = postgresql.ENUM(
+        "application_submitted", "submission_confirmation", "status_change",
+        name="notification_event", create_type=False,
+    )
+    notification_channel = postgresql.ENUM("email", "in_app", name="notification_channel", create_type=False)
+    notification_status = postgresql.ENUM(
+        "pending", "sent", "failed", "read", name="notification_status", create_type=False
+    )
 
     bind = op.get_bind()
     for enum in (

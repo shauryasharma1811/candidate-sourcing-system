@@ -62,6 +62,7 @@ class RequisitionListItem(BaseModel):
     max_salary: float | None
     hiring_completion_date: date | None
     status: JobStatus
+    application_count: int = 0
     created_at: datetime
     updated_at: datetime
 

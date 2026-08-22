@@ -63,3 +63,19 @@ def publish_requisition(job_id: str, db: Session = Depends(get_db)):
 def close_requisition(job_id: str, db: Session = Depends(get_db)):
     data = JobService(db).close_requisition(job_id)
     return SuccessResponse(message="Requisition closed", data=data)
+
+
+@router.post("/{job_id}/duplicate", response_model=SuccessResponse)
+def duplicate_requisition(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    data = JobService(db).duplicate_requisition(job_id, current_user)
+    return SuccessResponse(message="Requisition duplicated as a new draft", data=data)
+
+
+@router.delete("/{job_id}", response_model=SuccessResponse)
+def delete_requisition(job_id: str, db: Session = Depends(get_db)):
+    JobService(db).delete_requisition(job_id)
+    return SuccessResponse(message="Requisition deleted", data=None)

@@ -88,7 +88,12 @@ class JobService:
 
         items, total = self.jobs.list_admin(skip=skip, limit=page_size, status=status, q=q)
 
-        data = [RequisitionListItem.model_validate(job) for job in items]
+        counts = self.jobs.application_counts_for([job.id for job in items])
+        data = []
+        for job in items:
+            item = RequisitionListItem.model_validate(job)
+            item.application_count = counts.get(job.id, 0)
+            data.append(item)
         meta = PaginatedMeta(
             page=page,
             page_size=page_size,
@@ -125,7 +130,9 @@ class JobService:
         from app.schemas.requisition import RequisitionDetail
 
         job = self._get_admin_job_or_404(job_id)
-        return RequisitionDetail.model_validate(job)
+        detail = RequisitionDetail.model_validate(job)
+        detail.application_count = self.jobs.application_count_for(job.id)
+        return detail
 
     def create_requisition(self, current_user, payload):
         from app.schemas.requisition import RequisitionDetail
@@ -196,3 +203,45 @@ class JobService:
         job.status = JobStatus.CLOSED
         job = self.jobs.update(job)
         return RequisitionDetail.model_validate(job)
+
+    def duplicate_requisition(self, job_id: str, current_user):
+        """Copies every editable field onto a brand-new Draft with its own
+        auto-generated requisition_code — never the applications, status,
+        or admin-review history, since those belong to the original."""
+        from app.schemas.requisition import RequisitionDetail
+
+        source = self._get_admin_job_or_404(job_id)
+        admin = self.admins.get_by_user_id(current_user.id)
+        if not admin:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin profile not found")
+
+        copy = Job(
+            title=f"{source.title} (Copy)"[:150],
+            requisition_code=self._generate_requisition_code(),
+            department=source.department,
+            location=source.location,
+            employment_type=source.employment_type,
+            experience_required=source.experience_required,
+            openings=source.openings,
+            hiring_manager=source.hiring_manager,
+            description=source.description,
+            max_salary=source.max_salary,
+            hiring_completion_date=source.hiring_completion_date,
+            status=JobStatus.DRAFT,
+            created_by_admin_id=admin.id,
+        )
+        copy = self.jobs.create(copy)
+        return RequisitionDetail.model_validate(copy)
+
+    def delete_requisition(self, job_id: str) -> None:
+        """Delete is only safe for a requisition that never went live: once
+        Published, applications may reference it, and Closed requisitions
+        are the historical record — both are edited via status transitions
+        (close), never removed."""
+        job = self._get_admin_job_or_404(job_id)
+        if job.status != JobStatus.DRAFT:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only Draft requisitions can be deleted")
+        if self.jobs.application_count_for(job.id) > 0:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Requisitions with applications cannot be deleted")
+
+        self.jobs.delete(job)

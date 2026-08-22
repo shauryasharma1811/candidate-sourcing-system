@@ -1,9 +1,10 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.common.enums import JobStatus
+from app.models.application import Application
 from app.models.job import Job
 from app.repositories.base import BaseRepository
 
@@ -110,3 +111,19 @@ class JobRepository(BaseRepository[Job]):
 
     def count_all(self) -> int:
         return self.db.query(Job).count()
+
+    def application_counts_for(self, job_ids: list[uuid.UUID]) -> dict[uuid.UUID, int]:
+        """Bulk application-count lookup for a page of requisition rows —
+        one query for the whole list instead of N+1."""
+        if not job_ids:
+            return {}
+        rows = (
+            self.db.query(Application.job_id, func.count(Application.id))
+            .filter(Application.job_id.in_(job_ids))
+            .group_by(Application.job_id)
+            .all()
+        )
+        return {job_id: count for job_id, count in rows}
+
+    def application_count_for(self, job_id: uuid.UUID) -> int:
+        return self.db.query(Application).filter(Application.job_id == job_id).count()

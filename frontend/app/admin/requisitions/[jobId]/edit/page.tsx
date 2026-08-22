@@ -55,12 +55,12 @@ export default function EditRequisitionPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Edit Requisition</h1>
-        <p className="mt-1 text-sm text-gray-600">Update the details below.</p>
+        <h1 className="text-2xl font-semibold text-foreground">Edit Requisition</h1>
+        <p className="mt-1 text-sm text-muted">Update the details below.</p>
       </div>
 
-      {isLoading && <p className="text-sm text-gray-500">Loading…</p>}
-      {loadError && <p className="text-sm text-red-700">{loadError}</p>}
+      {isLoading && <p className="text-sm text-muted">Loading…</p>}
+      {loadError && <p className="text-sm text-red-700 dark:text-red-400">{loadError}</p>}
 
       {requisition && (
         <JobForm
@@ -78,6 +78,7 @@ export default function EditRequisitionPage() {
           }}
           requisitionCode={requisition.requisition_code}
           status={requisition.status}
+          applicationCount={requisition.application_count}
           submitting={submitting}
           serverError={serverError}
           onCancel={() => router.push("/admin/requisitions")}

@@ -91,20 +91,20 @@ export default function RegisterPage() {
             autoComplete="new-password"
             minLength={8}
           />
-          <p className="mt-1 text-xs text-gray-500">At least 8 characters, with upper, lower, and a number.</p>
+          <p className="mt-1 text-xs text-muted">At least 8 characters, with upper, lower, and a number.</p>
         </FormField>
 
-        <label className="mb-4 flex items-start gap-2 text-sm text-gray-700">
+        <label className="mb-4 flex items-start gap-2 text-sm text-foreground">
           <input type="checkbox" className="mt-1" checked={form.consent} onChange={(e) => update("consent", e.target.checked)} />
           I consent to my information being used to process my application(s).
         </label>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
         >
           {submitting ? "Creating account…" : "Create account"}
         </button>
@@ -112,7 +112,7 @@ export default function RegisterPage() {
 
       <p className="mt-4 text-sm">
         Already have an account?{" "}
-        <Link href="/auth/login" className="text-blue-600 hover:underline">
+        <Link href="/auth/login" className="text-primary hover:underline">
           Sign in
         </Link>
       </p>

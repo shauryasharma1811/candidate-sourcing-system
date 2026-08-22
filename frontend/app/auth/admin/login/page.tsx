@@ -58,12 +58,12 @@ function AdminLoginForm() {
           />
         </FormField>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
+          className="w-full rounded-2xl bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
@@ -74,7 +74,7 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-gray-500">Loading…</div>}>
+    <Suspense fallback={<div className="p-8 text-sm text-muted">Loading…</div>}>
       <AdminLoginForm />
     </Suspense>
   );

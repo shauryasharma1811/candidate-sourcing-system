@@ -38,4 +38,16 @@ export const requisitionService = {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
+
+  publish: (jobId: string): Promise<RequisitionDetail> =>
+    apiFetch<RequisitionDetail>(`/admin/requisitions/${jobId}/publish`, { method: "POST" }),
+
+  close: (jobId: string): Promise<RequisitionDetail> =>
+    apiFetch<RequisitionDetail>(`/admin/requisitions/${jobId}/close`, { method: "POST" }),
+
+  duplicate: (jobId: string): Promise<RequisitionDetail> =>
+    apiFetch<RequisitionDetail>(`/admin/requisitions/${jobId}/duplicate`, { method: "POST" }),
+
+  remove: (jobId: string): Promise<void> =>
+    apiFetch<void>(`/admin/requisitions/${jobId}`, { method: "DELETE" }),
 };

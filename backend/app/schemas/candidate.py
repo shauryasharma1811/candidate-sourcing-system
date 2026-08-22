@@ -219,16 +219,19 @@ MAX_COVER_NOTE_LENGTH = 2000
 
 
 class ApplicationSubmitRequest(BaseModel):
+    # consent is intentionally NOT validated here (M-3): a Pydantic
+    # field_validator raising on False would reject the request at the
+    # 422 (schema-validation) layer before it ever reaches the service,
+    # even though "consent=False" is a perfectly well-typed, valid piece
+    # of input — it's a *business rule* ("you may not submit without
+    # consenting"), not a shape/type problem. ApplicationService.submit_application()
+    # already checks `if not payload.consent` and raises a 400, which is
+    # what the API contract/tests expect for this case. Keeping the check
+    # at the service layer (not duplicating it here) means there's exactly
+    # one place that decides the status code for this rule.
     consent: bool
     # Optional cover note, per BRD Step 4 (Resume Upload).
     cover_note: str | None = Field(default=None, max_length=MAX_COVER_NOTE_LENGTH)
-
-    @field_validator("consent")
-    @classmethod
-    def _must_consent(cls, v: bool) -> bool:
-        if not v:
-            raise ValueError("Consent is required to submit an application")
-        return v
 
     @field_validator("cover_note")
     @classmethod

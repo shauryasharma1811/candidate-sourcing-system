@@ -11,13 +11,22 @@ from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.user import User
 
-bearer_scheme = HTTPBearer(auto_error=True)
+# auto_error=False (M-2): FastAPI/Starlette's HTTPBearer defaults to raising
+# a 403 when the Authorization header is missing entirely, which conflicts
+# with this API's documented contract (401 for "not authenticated", 403 for
+# "authenticated but not permitted"). With auto_error=False, a missing
+# header just makes `credentials` None, so we can raise 401 for it
+# ourselves below and reserve 403 for require_role()'s "wrong role" case.
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
+    if credentials is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
+
     payload = decode_token(credentials.credentials)
     if not payload or payload.get("type") != "access":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired access token")

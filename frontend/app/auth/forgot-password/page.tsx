@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
     return (
       <main className="mx-auto max-w-sm p-8">
         <h1 className="mb-4 text-2xl font-semibold">Check your email</h1>
-        <p className="text-gray-600">
+        <p className="text-muted">
           If an account exists for <strong>{email}</strong>, we&apos;ve sent a password reset link. It expires in 30 minutes.
         </p>
       </main>
@@ -40,19 +40,19 @@ export default function ForgotPasswordPage() {
   return (
     <main className="mx-auto max-w-sm p-8">
       <h1 className="mb-2 text-2xl font-semibold">Forgot password</h1>
-      <p className="mb-6 text-sm text-gray-600">Enter your email and we&apos;ll send you a reset link.</p>
+      <p className="mb-6 text-sm text-muted">Enter your email and we&apos;ll send you a reset link.</p>
 
       <form onSubmit={handleSubmit}>
         <FormField label="Email">
           <input type="email" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} required />
         </FormField>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
         >
           {submitting ? "Sending…" : "Send reset link"}
         </button>

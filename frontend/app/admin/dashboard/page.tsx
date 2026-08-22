@@ -25,12 +25,12 @@ export default function AdminDashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-600">Welcome back{user?.first_name ? `, ${user.first_name}` : ""}.</p>
+        <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted">Welcome back{user?.first_name ? `, ${user.first_name}` : ""}.</p>
       </div>
 
       {loadFailed && (
-        <p className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+        <p className="rounded-2xl bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-400">
           Couldn&apos;t load dashboard stats. Please refresh the page.
         </p>
       )}

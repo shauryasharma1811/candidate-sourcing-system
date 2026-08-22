@@ -64,22 +64,22 @@ function CandidateLoginForm() {
           />
         </FormField>
 
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50"
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
 
       <div className="mt-4 flex justify-between text-sm">
-        <Link href="/auth/forgot-password" className="text-blue-600 hover:underline">
+        <Link href="/auth/forgot-password" className="text-primary hover:underline">
           Forgot password?
         </Link>
-        <Link href="/auth/register" className="text-blue-600 hover:underline">
+        <Link href="/auth/register" className="text-primary hover:underline">
           Create an account
         </Link>
       </div>
@@ -89,7 +89,7 @@ function CandidateLoginForm() {
 
 export default function CandidateLoginPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-gray-500">Loading…</div>}>
+    <Suspense fallback={<div className="p-8 text-sm text-muted">Loading…</div>}>
       <CandidateLoginForm />
     </Suspense>
   );

@@ -21,8 +21,9 @@ down_revision = "0008_application_cover_note"
 branch_labels = None
 depends_on = None
 
+# create_type=False (see 0001 for rationale): enum.create() below is the sole DDL emitter.
 RESUME_SCAN_STATUS_ENUM = sa.Enum(
-    "pending", "clean", "infected", "failed", name="resume_scan_status"
+    "pending", "clean", "infected", "failed", name="resume_scan_status", create_type=False
 )
 
 

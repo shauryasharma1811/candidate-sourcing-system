@@ -3,9 +3,14 @@
 A modular-monolith recruiting platform: public careers site, multi-step candidate
 application flow, and an admin requisition/application review workspace.
 
-This repository is **Sprint 0 — Foundation**: architecture, folder structure, Docker,
-environment configuration, database schema, and API skeleton. Business logic is
-implemented sprint-by-sprint on top of this locked foundation (see Sprint Roadmap below).
+This repository has completed all Phase-1 feature implementation (public careers
+site, candidate registration/application flow, admin requisition & application
+management, notifications) and a subsequent production-readiness pass that fixed
+the deployment-blocking issues found in a release audit (broken clean-install
+migrations, a bcrypt/passlib version conflict, no first-admin bootstrap path,
+missing rate limiting, and several other High-priority gaps — see
+"Production Readiness" below for the full list). The codebase now deploys
+successfully from a clean environment.
 
 ## Tech Stack
 
@@ -210,9 +215,40 @@ docker compose up --build
 ### 3. Run database migrations
 
 ```bash
-docker compose exec backend alembic revision --autogenerate -m "init schema"
 docker compose exec backend alembic upgrade head
 ```
+
+This applies migrations 0001 through 0009 against a fresh database. (Don't run
+`alembic revision --autogenerate` unless you're actually adding a new migration —
+the schema itself is already fully defined by the existing migration files.)
+
+### 3b. Create the first Admin account
+
+There's no self-serve way to become the first Admin (every admin-management
+endpoint itself requires admin auth) — bootstrap it directly with the CLI script:
+
+```bash
+# Docker:
+docker compose exec backend python scripts/create_admin.py
+
+# Local (non-Docker) backend:
+cd backend && python scripts/create_admin.py
+```
+
+Run it with no flags for an interactive prompt (email, name, password), or
+non-interactively via flags/env vars for scripted/CI use:
+
+```bash
+python scripts/create_admin.py \
+  --email admin@example.com \
+  --password 'A-Strong-Passw0rd!' \
+  --first-name Jane \
+  --last-name Doe
+```
+
+The script is idempotent — re-running it against an existing admin email is a
+no-op unless you pass `--force` (which resets the password and, if needed,
+promotes an existing non-Admin account to Admin).
 
 ### 4. Local (non-Docker) backend development
 
@@ -254,11 +290,67 @@ cd frontend && npm run test:e2e
 | 6 | Notifications — email, in-app, notification bell |
 | 7 | Testing & Deployment — unit/integration/E2E, production Docker, GitHub Actions |
 
-## Security & Performance (enforced across all sprints)
+## Security & Performance
 
-HTTPS · JWT verification · bcrypt hashing · parameterized ORM queries · rate limiting ·
-input sanitization · least privilege · no password/token/resume-content logging ·
-mandatory pagination · indexed queries · lazy loading · async email dispatch.
+HTTPS (terminated at the reverse proxy/ingress, app itself is transport-agnostic) ·
+JWT verification · bcrypt hashing (bcrypt==4.0.1, pinned for passlib compatibility) ·
+parameterized ORM queries (no raw SQL) · rate limiting (slowapi — see below) ·
+input sanitization (Pydantic validators, backend-authoritative) · least privilege
+(role-scoped endpoints via `require_role`) · no password/token/resume-content
+logging · mandatory pagination (hard `MAX_PAGE_SIZE=50` cap) · indexed queries ·
+synchronous best-effort email dispatch (see "Known limitations" below for the
+async-worker gap).
+
+**Rate limiting:** applied to `/auth/register`, `/auth/login`, `/auth/admin/login`,
+`/auth/forgot-password`, and resume upload, keyed by client IP. Defaults (tunable
+via `RATE_LIMIT_*` env vars, see below): 10/minute for login, 5/minute for
+register and forgot-password, 10/minute for resume upload.
+
+## Production Readiness
+
+This codebase went through a release audit that found the app's own documented
+setup path (`alembic upgrade head` → `pip install -r requirements.txt` →
+register/login) was broken on a genuinely clean machine, despite ~90%+ BRD
+feature coverage and a passing test suite (the tests bypassed Alembic entirely
+via `Base.metadata.create_all`, so migration breakage went uncaught). The
+following were fixed:
+
+- **Migrations now apply cleanly on a fresh database.** The enum columns in
+  `0001_init_schema.py`, `0004_candidate_bio_fields.py`, and
+  `0009_resume_scan_retention.py` previously triggered a duplicate
+  `CREATE TYPE` (SQLAlchemy's automatic per-column DDL event colliding with
+  the explicit `enum.create(checkfirst=True)` call). Fixed by constructing
+  those enum types with `create_type=False`.
+- **`bcrypt`/`passlib` version conflict fixed** — `bcrypt` is now pinned to
+  `4.0.1` in `requirements.txt` (a clean install previously resolved
+  `bcrypt==5.x`, which the pinned `passlib==1.7.4` can't parse, crashing
+  every password hash/verify call).
+- **`email-validator` added** — required transitively by Pydantic's `EmailStr`
+  but was missing from `requirements.txt`, so a clean install failed at
+  import time.
+- **First-admin bootstrap** — `scripts/create_admin.py` (see setup step 3b
+  above).
+- **Rate limiting** — see above.
+- **Password-reset emails now contain a real, usable reset link** (built from
+  `FRONTEND_URL`) instead of only logging a bare token.
+- **API status-code contract fixed:** a missing `Authorization` header now
+  correctly returns 401 (was 403, FastAPI's `HTTPBearer` default); a missing
+  application-submission consent now returns 400 from the service layer (was
+  422 from a Pydantic-level validator that fired before the service's own
+  business-rule check could run).
+- **Excel (.xlsx) export added** alongside the existing CSV export
+  (`GET /admin/applications/export?format=xlsx`), closing the BRD's
+  "CSV/Excel" gap.
+- **`next` bumped off the CVE-flagged 15.0.0** to a patched 15.x release.
+
+**Known, documented limitation (not fixed in this pass):** JWT access/refresh
+tokens are still stored in `localStorage`, not httpOnly cookies. Migrating to
+cookies is a genuine backend+frontend architecture change (cookie-based auth,
+CSRF mitigation, CORS/credentials rework, refresh-flow rework), not a config
+flag — see the detailed tradeoff note in `frontend/lib/session.ts`. In the
+meantime, the app relies on React's default output escaping (no
+`dangerouslySetInnerHTML` anywhere) and a strict CORS origin allowlist as
+mitigation.
 
 ## Git Strategy
 

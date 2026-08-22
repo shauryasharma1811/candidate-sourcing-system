@@ -31,6 +31,8 @@ export interface JobFormProps {
   requisitionCode?: string;
   /** Current lifecycle status — controls which action buttons make sense. */
   status?: JobStatus;
+  /** Applications received so far — display-only, shown when editing. */
+  applicationCount?: number;
   submitting?: boolean;
   serverError?: string | null;
   onCancel: () => void;
@@ -44,6 +46,7 @@ export function JobForm({
   initialValues,
   requisitionCode,
   status,
+  applicationCount,
   submitting = false,
   serverError,
   onCancel,
@@ -109,21 +112,26 @@ export function JobForm({
       className="max-w-3xl"
     >
       {requisitionCode && (
-        <div className="mb-4 rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-600 ring-1 ring-gray-200">
-          Requisition ID: <span className="font-medium text-gray-900">{requisitionCode}</span>
+        <div className="mb-4 rounded-2xl bg-background px-3 py-2 text-sm text-muted ring-1 ring-border">
+          Requisition ID: <span className="font-medium text-foreground">{requisitionCode}</span>
+          {typeof applicationCount === "number" && (
+            <span className="ml-3">
+              · Applications: <span className="font-medium text-foreground">{applicationCount}</span>
+            </span>
+          )}
         </div>
       )}
 
       {!requisitionCode && (
-        <p className="mb-4 text-sm text-gray-500">A requisition ID will be generated automatically on save.</p>
+        <p className="mb-4 text-sm text-muted">A requisition ID will be generated automatically on save.</p>
       )}
 
       {serverError && (
-        <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200">{serverError}</div>
+        <div className="mb-4 rounded-2xl bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-400 ring-1 ring-red-500/20">{serverError}</div>
       )}
 
       {isClosed && (
-        <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 ring-1 ring-amber-200">
+        <div className="mb-4 rounded-2xl bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-300 ring-1 ring-amber-500/20">
           This requisition is closed and can no longer be edited.
         </div>
       )}

@@ -11,7 +11,7 @@ export function RichTextSection({ text }: { text: string }) {
 
   if (looksLikeList) {
     return (
-      <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-gray-700">
+      <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground/90">
         {lines.map((line, i) => (
           <li key={i}>{line.replace(/^[-*•]\s*/, "")}</li>
         ))}
@@ -19,5 +19,5 @@ export function RichTextSection({ text }: { text: string }) {
     );
   }
 
-  return <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{text}</p>;
+  return <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{text}</p>;
 }

@@ -7,8 +7,8 @@ export function Badge({
 }) {
   const toneClass =
     tone === "brand"
-      ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200"
-      : "bg-gray-100 text-gray-700 ring-1 ring-inset ring-gray-200";
+      ? "bg-primary-soft text-primary ring-1 ring-inset ring-primary/20"
+      : "bg-surface-muted text-muted ring-1 ring-inset ring-border";
 
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${toneClass}`}>

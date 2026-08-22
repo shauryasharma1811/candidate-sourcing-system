@@ -44,7 +44,7 @@ export function ProtectedRoute({ children, allowedRoles, intendedJobId }: Protec
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="flex items-center justify-center p-16 text-gray-500">
+      <div className="flex items-center justify-center p-16 text-muted">
         Checking your session…
       </div>
     );

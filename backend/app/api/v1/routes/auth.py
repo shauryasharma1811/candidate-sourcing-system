@@ -2,10 +2,16 @@
 Thin controllers: parse request -> call AuthService -> wrap in standard envelope.
 No business logic here.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.auth.deps import get_current_user
+from app.core.rate_limit import (
+    FORGOT_PASSWORD_RATE_LIMIT,
+    LOGIN_RATE_LIMIT,
+    REGISTER_RATE_LIMIT,
+    limiter,
+)
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import (
@@ -24,19 +30,22 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=SuccessResponse[TokenPairResponse], status_code=201)
-def register(payload: CandidateRegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit(REGISTER_RATE_LIMIT)
+def register(request: Request, payload: CandidateRegisterRequest, db: Session = Depends(get_db)):
     tokens = AuthService(db).register_candidate(payload)
     return SuccessResponse(message="Account created", data=tokens)
 
 
 @router.post("/login", response_model=SuccessResponse[TokenPairResponse])
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit(LOGIN_RATE_LIMIT)
+def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     tokens = AuthService(db).authenticate(payload.email, payload.password, payload.intended_job_id)
     return SuccessResponse(message="Logged in", data=tokens)
 
 
 @router.post("/admin/login", response_model=SuccessResponse[TokenPairResponse])
-def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit(LOGIN_RATE_LIMIT)
+def admin_login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     tokens = AuthService(db).authenticate_admin(payload.email, payload.password)
     return SuccessResponse(message="Logged in", data=tokens)
 
@@ -48,7 +57,8 @@ def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/forgot-password", response_model=SuccessResponse[None])
-def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit(FORGOT_PASSWORD_RATE_LIMIT)
+def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     AuthService(db).request_password_reset(payload.email)
     return SuccessResponse(message="If that email exists, a reset link has been sent", data=None)
 
