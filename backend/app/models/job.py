@@ -17,7 +17,14 @@ class Job(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     requisition_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     department: Mapped[str] = mapped_column(String(100), nullable=False)
     location: Mapped[str] = mapped_column(String(150), nullable=False)
-    employment_type: Mapped[EmploymentType] = mapped_column(SAEnum(EmploymentType, name="employment_type"), nullable=False)
+    employment_type: Mapped[EmploymentType] = mapped_column(
+    SAEnum(
+        EmploymentType,
+        name="employment_type",
+        values_callable=lambda enum: [e.value for e in enum],
+    ),
+    nullable=False,
+    )
     experience_required: Mapped[str] = mapped_column(String(50), nullable=True)
     openings: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     hiring_manager: Mapped[str] = mapped_column(String(150), nullable=False)
@@ -25,7 +32,15 @@ class Job(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     hiring_completion_date: Mapped[date] = mapped_column(Date, nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     requirements: Mapped[str] = mapped_column(Text, nullable=True)
-    status: Mapped[JobStatus] = mapped_column(SAEnum(JobStatus, name="job_status"), nullable=False, default=JobStatus.DRAFT)
+    status: Mapped[JobStatus] = mapped_column(
+    SAEnum(
+        JobStatus,
+        name="job_status",
+        values_callable=lambda enum: [e.value for e in enum],
+    ),
+    nullable=False,
+    default=JobStatus.DRAFT,
+    )
     created_by_admin_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("admins.id", ondelete="SET NULL"), nullable=True)
 
     applications = relationship("Application", back_populates="job")
