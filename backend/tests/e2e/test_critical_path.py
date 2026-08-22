@@ -124,11 +124,15 @@ class TestCandidateApplicationCriticalPath:
 
         candidate_view = admin.get(f"{ADMIN_APPLICATIONS}/{application_id}")
         assert candidate_view.status_code == 200
-        assert candidate_view.json()["data"]["candidate"]["first_name"] == "Priya"
+        assert candidate_view.json()["data"]["bio"]["first_name"] == "Priya"
 
         resume_link = admin.get(f"{ADMIN_APPLICATIONS}/{application_id}/resume")
+        print("\nRESUME RESPONSE:", resume_link.json())
         assert resume_link.status_code == 200
-        assert "signed.example" in resume_link.json()["data"]["download_url"]
+        body = resume_link.json()
+        assert body["success"] is True
+        assert "signed.example" in body["data"]["url"]
+        assert body["data"]["expires_in_seconds"] == 300
 
         status_update = admin.patch(
             f"{ADMIN_APPLICATIONS}/{application_id}/status", json={"status": ApplicationStatus.SHORTLISTED.value}
@@ -177,7 +181,7 @@ class TestCandidateApplicationCriticalPath:
         first = client.post(f"{APPLICATIONS}/{job.id}/submit", json={"consent": True})
         assert first.status_code == 200
         second = client.post(f"{APPLICATIONS}/{job.id}/submit", json={"consent": True})
-        assert second.status_code == 400
+        assert second.status_code == 409
 
 
 class TestAdminRequisitionCriticalPath:

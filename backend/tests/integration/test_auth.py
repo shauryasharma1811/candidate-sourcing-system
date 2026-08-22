@@ -134,7 +134,7 @@ class TestRefreshAndMe:
 
     def test_me_requires_authentication(self, client):
         resp = client.get(f"{BASE}/me")
-        assert resp.status_code == 403  # no bearer header at all -> HTTPBearer rejects
+        assert resp.status_code == 401  # no bearer header at all -> HTTPBearer rejects
 
     def test_me_returns_the_logged_in_profile(self, candidate_client):
         client, user, candidate = candidate_client

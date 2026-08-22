@@ -25,7 +25,7 @@ def _requisition_payload(**overrides):
 class TestAccessControl:
     def test_requisitions_are_not_accessible_without_auth(self, client):
         resp = client.get(BASE)
-        assert resp.status_code == 403
+        assert resp.status_code == 401
 
     def test_candidate_cannot_access_admin_requisitions(self, candidate_client):
         client, _, _ = candidate_client

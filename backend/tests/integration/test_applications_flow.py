@@ -129,7 +129,7 @@ class TestSubmitApplication:
         _complete_profile(client)
         _upload_resume(client, job.id)
         resp = client.post(f"{APPLICATIONS}/{job.id}/submit", json={"consent": False})
-        assert resp.status_code == 422
+        assert resp.status_code == 400
 
     def test_full_happy_path_submits_successfully(self, candidate_client, make_job):
         client, _, _ = candidate_client

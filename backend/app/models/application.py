@@ -20,7 +20,11 @@ class Application(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     application_code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     candidate_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"))
     job_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("job_requisitions.id", ondelete="CASCADE"))
-    resume_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="RESTRICT"))
+    resume_id: Mapped[uuid.UUID | None] = mapped_column(
+    UUID(as_uuid=True),
+    ForeignKey("resumes.id", ondelete="SET NULL"),
+    nullable=True,
+    )
     status: Mapped[ApplicationStatus] = mapped_column(
     SAEnum(
         ApplicationStatus,

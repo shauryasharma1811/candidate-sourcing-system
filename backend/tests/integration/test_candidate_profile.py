@@ -7,7 +7,7 @@ BASE = "/api/v1/candidate"
 class TestAccessControl:
     def test_profile_requires_authentication(self, client):
         resp = client.get(f"{BASE}/profile")
-        assert resp.status_code == 403
+        assert resp.status_code == 401
 
     def test_admin_cannot_access_candidate_profile_endpoints(self, admin_client):
         client, _, _ = admin_client

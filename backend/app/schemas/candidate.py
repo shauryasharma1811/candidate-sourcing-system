@@ -99,6 +99,13 @@ class EducationInput(BaseModel):
     def _strip(cls, v: str) -> str:
         return v.strip()
 
+    @field_validator("passing_year")
+    @classmethod
+    def validate_passing_year(cls, v: int) -> int:
+        if v > datetime.now().year + 10:
+            raise ValueError("Passing year cannot be more than 10 years in the future")
+        return v
+
 
 class EducationItem(EducationInput):
     model_config = ConfigDict(from_attributes=True)
