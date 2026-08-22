@@ -2,7 +2,8 @@ import uuid
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, Boolean, Date, Enum, ForeignKey, Numeric, String, Text
+from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, Numeric, String, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,10 +24,20 @@ class Candidate(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     is_fresher: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # --- Step 1 — Bio Data (extended fields) ---
-    gender: Mapped[Gender | None] = mapped_column(Enum(Gender, name="gender"), nullable=True)
+    gender: Mapped[Gender | None] = mapped_column(
+    SAEnum(Gender, name="gender", values_callable=lambda e: [i.value for i in e]),
+    nullable=True,
+    )
     dob: Mapped[date | None] = mapped_column(Date, nullable=True)
     current_company: Mapped[str | None] = mapped_column(String(150), nullable=True)
-    notice_period: Mapped[NoticePeriod | None] = mapped_column(Enum(NoticePeriod, name="notice_period"), nullable=True)
+    notice_period: Mapped[NoticePeriod | None] = mapped_column(
+    SAEnum(
+        NoticePeriod,
+        name="notice_period",
+        values_callable=lambda e: [i.value for i in e],
+    ),
+    nullable=True,
+    )
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Profile photo — metadata only, mirrors Resume's storage pattern; the

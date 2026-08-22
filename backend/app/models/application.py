@@ -22,7 +22,13 @@ class Application(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     job_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("job_requisitions.id", ondelete="CASCADE"))
     resume_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="RESTRICT"))
     status: Mapped[ApplicationStatus] = mapped_column(
-        SAEnum(ApplicationStatus, name="application_status"), nullable=False, default=ApplicationStatus.NEW
+    SAEnum(
+        ApplicationStatus,
+        name="application_status",
+        values_callable=lambda x: [e.value for e in x],
+    ),
+    nullable=False,
+    default=ApplicationStatus.NEW,
     )
     consent: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # Step 4 (Resume Upload) per BRD: "Optional cover note."

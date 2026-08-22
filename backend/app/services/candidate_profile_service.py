@@ -192,8 +192,17 @@ class CandidateProfileService:
         candidate = self._get_candidate_or_404(user)
         return FresherStatusResponse(is_fresher=candidate.is_fresher)
 
-    def set_fresher_status(self, user: User, payload: FresherStatusUpdateRequest) -> FresherStatusResponse:
+    def set_fresher_status(self, user: User, payload: FresherStatusUpdateRequest) ->             FresherStatusResponse:
         candidate = self._get_candidate_or_404(user)
+
         candidate.is_fresher = payload.is_fresher
         candidate = self.candidates.update(candidate)
+
+    # BRD: Candidate is either Fresher OR has Experience.
+    # When marking as fresher, remove all saved experience entries.
+        if payload.is_fresher:
+            experiences = self.experience.list_for_candidate(candidate.id)
+            for exp in experiences:
+                self.experience.delete(exp)
+
         return FresherStatusResponse(is_fresher=candidate.is_fresher)

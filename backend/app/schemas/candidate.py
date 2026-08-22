@@ -91,7 +91,7 @@ class BioDataUpdateRequest(BaseModel):
 class EducationInput(BaseModel):
     institution: str = Field(min_length=1, max_length=150)
     degree: str = Field(min_length=1, max_length=150)
-    passing_year: int = Field(ge=1950, le=date.today().year)
+    passing_year: int
     cgpa: Decimal = Field(ge=0, le=10, max_digits=4, decimal_places=2)
 
     @field_validator("institution", "degree")
@@ -121,7 +121,7 @@ class ExperienceInput(BaseModel):
     title: str = Field(min_length=1, max_length=150)
     start_date: date
     currently_working: bool = False
-    end_date: date | None = None  # must be None when currently_working=True
+    end_date: date | None = None
     responsibilities: str | None = None
 
     @field_validator("company", "title")
@@ -130,7 +130,7 @@ class ExperienceInput(BaseModel):
         return v.strip()
 
     @model_validator(mode="after")
-    def _validate_dates(self) -> "ExperienceInput":
+    def _validate_dates(self):
         if self.start_date > date.today():
             raise ValueError("Experience start date cannot be in the future")
 
@@ -144,6 +144,7 @@ class ExperienceInput(BaseModel):
                 raise ValueError("Experience end date cannot be in the future")
             if self.end_date < self.start_date:
                 raise ValueError("Experience end date cannot be before the start date")
+
         return self
 
 

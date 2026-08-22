@@ -28,7 +28,13 @@ class Resume(UUIDPrimaryKeyMixin, Base):
 
     # --- Virus scan (placeholder scanner today — see virus_scan_service) ---
     scan_status: Mapped[ScanStatus] = mapped_column(
-        SAEnum(ScanStatus, name="resume_scan_status"), nullable=False, default=ScanStatus.PENDING
+    SAEnum(
+        ScanStatus,
+        name="resume_scan_status",
+        values_callable=lambda enum: [e.value for e in enum],
+    ),
+    nullable=False,
+    default=ScanStatus.PENDING,
     )
     scanned_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     scan_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)

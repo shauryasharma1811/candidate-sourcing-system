@@ -33,10 +33,31 @@ class Notification(UUIDPrimaryKeyMixin, Base):
         ),
     )
 
-    event: Mapped[NotificationEvent] = mapped_column(SAEnum(NotificationEvent, name="notification_event"), nullable=False)
-    channel: Mapped[NotificationChannel] = mapped_column(SAEnum(NotificationChannel, name="notification_channel"), nullable=False)
+    event: Mapped[NotificationEvent] = mapped_column(
+    SAEnum(
+        NotificationEvent,
+        name="notification_event",
+        values_callable=lambda x: [e.value for e in x],
+    ),
+    nullable=False,
+    )
+    channel: Mapped[NotificationChannel] = mapped_column(
+    SAEnum(
+        NotificationChannel,
+        name="notification_channel",
+        values_callable=lambda x: [e.value for e in x],
+    ),
+    nullable=False,
+    )
+
     status: Mapped[NotificationStatus] = mapped_column(
-        SAEnum(NotificationStatus, name="notification_status"), nullable=False, default=NotificationStatus.PENDING
+        SAEnum(
+            NotificationStatus,
+            name="notification_status",
+            values_callable=lambda x: [e.value for e in x],
+        ),
+    nullable=False,
+    default=NotificationStatus.PENDING,
     )
 
     admin_recipient_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("admins.id", ondelete="CASCADE"), nullable=True)
