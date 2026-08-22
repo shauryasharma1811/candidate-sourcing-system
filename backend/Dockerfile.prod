@@ -1,0 +1,65 @@
+# syntax=docker/dockerfile:1
+# ---------------------------------------------------------------------------
+# Production image for the FastAPI backend.
+# Differs from the dev Dockerfile (used by docker-compose.yml) in that it:
+#   - builds wheels in a separate stage so build tools never ship in the
+#     final image
+#   - runs as a non-root user
+#   - runs gunicorn with uvicorn workers instead of a single --reload process
+#   - bakes in a HEALTHCHECK the orchestrator/compose can poll
+# ---------------------------------------------------------------------------
+
+FROM python:3.12-slim AS builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 appuser \
+    && useradd --uid 1000 --gid appuser --shell /bin/false --create-home appuser
+
+WORKDIR /app
+
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
+RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
+    && pip install --no-cache-dir gunicorn==23.0.0 \
+    && rm -rf /wheels
+
+COPY --chown=appuser:appuser . .
+
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -fsS http://localhost:8000/health || exit 1
+
+# --preload shares loaded app code across workers (lower memory, faster
+# worker restarts). Worker count is a starting point for small/medium
+# instances — tune with (2 x CPU cores) + 1 per Gunicorn's own guidance.
+CMD ["gunicorn", "app.main:app", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--workers", "4", \
+     "--bind", "0.0.0.0:8000", \
+     "--timeout", "60", \
+     "--graceful-timeout", "30", \
+     "--keep-alive", "5", \
+     "--preload", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]
